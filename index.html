@@ -56,6 +56,17 @@
       justify-content: space-between;
       font-family: monospace;
       margin-bottom: 0.4rem;
+      flex-wrap: wrap;
+    }
+
+    .cost-line span {
+      flex: 1 1 100%;
+    }
+
+    @media (min-width: 600px) {
+      .cost-line span {
+        flex: unset;
+      }
     }
     hr {
       border: none;
