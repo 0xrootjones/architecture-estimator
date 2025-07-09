@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Architecture Estimator</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #121212;
+      color: #e0e0e0;
+      max-width: 700px;
+      margin: 2rem auto;
+      padding: 2rem;
+      border-radius: 10px;
+    }
+    h1, h2 {
+      text-align: center;
+      color: #ffffff;
+    }
+    label {
+      display: block;
+      margin-top: 1rem;
+    }
+    input {
+      width: 100%;
+      padding: 0.6rem;
+      font-size: 1rem;
+      border: 1px solid #444;
+      border-radius: 4px;
+      background-color: #1e1e1e;
+      color: #fff;
+    }
+    button {
+      margin-top: 1.5rem;
+      padding: 0.75rem 1.2rem;
+      font-size: 1rem;
+      background: #4caf50;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      display: block;
+      width: 100%;
+    }
+    #output {
+      margin-top: 2rem;
+      background-color: #1e1e1e;
+      border: 1px solid #333;
+      padding: 1rem;
+      border-radius: 6px;
+    }
+    .cost-line {
+      display: flex;
+      justify-content: space-between;
+      font-family: monospace;
+      margin-bottom: 0.4rem;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #333;
+      margin: 1.5rem 0;
+    }
+    #advanced-options {
+      display: none;
+      margin-top: 1rem;
+      padding: 1rem;
+      border: 1px solid #444;
+      border-radius: 6px;
+      background-color: #1e1e1e;
+    }
+    .toggle-btn {
+      background: #333;
+      color: #ccc;
+      border: none;
+      margin-top: 1rem;
+      padding: 0.5rem;
+      width: 100%;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Architecture Estimator</h1>
+
+  <label for="sqft">Square Footage</label>
+  <input type="number" id="sqft" placeholder="e.g. 3500">
+
+  <button class="toggle-btn" onclick="toggleAdvanced()">Show Advanced Options</button>
+
+  <div id="advanced-options">
+    <label for="customLow">Custom Low $/SF</label>
+    <input type="number" id="customLow" placeholder="Leave blank for default (400)">
+
+    <label for="customHigh">Custom High $/SF</label>
+    <input type="number" id="customHigh" placeholder="Leave blank for default (550)">
+  </div>
+
+  <button onclick="calculate()">Estimate</button>
+
+  <div id="output"></div>
+
+  <script>
+    function toggleAdvanced() {
+      const section = document.getElementById("advanced-options");
+      section.style.display = section.style.display === "none" ? "block" : "none";
+    }
+
+    function calculate() {
+      const sqft = parseFloat(document.getElementById("sqft").value);
+      const output = document.getElementById("output");
+
+      if (isNaN(sqft) || sqft <= 0) {
+        output.innerHTML = "<strong>Please enter a valid square footage.</strong>";
+        return;
+      }
+
+      const customLow = parseFloat(document.getElementById("customLow").value);
+      const customHigh = parseFloat(document.getElementById("customHigh").value);
+
+      const lowRate = isNaN(customLow) ? 400 : customLow;
+      const highRate = isNaN(customHigh) ? 550 : customHigh;
+
+      const totalLow = sqft * lowRate;
+      const totalHigh = sqft * highRate;
+
+      const phases = [
+        { name: "Master Planning & Conceptual Design", low: 0.002, high: 0.004 },
+        { name: "Schematic Design", low: 0.01, high: 0.0133 },
+        { name: "Design Development", low: 0.01, high: 0.0167 },
+        { name: "Construction Documentation", low: 0.0167, high: 0.0233 },
+        { name: "Interior Architecture", low: 0.0055, high: 0.008 },
+        { name: "Interior Modeling", low: 0.0015, high: 0.0035 }
+      ];
+
+      let html = `
+        <h2>Estimated Construction Cost Range</h2>
+        <p><strong>Low:</strong> $${totalLow.toLocaleString()}</p>
+        <p><strong>High:</strong> $${totalHigh.toLocaleString()}</p>
+        <hr>
+        <h3>Phase Estimates (Low – High)</h3>
+      `;
+
+      phases.forEach(phase => {
+        const costLow = totalLow * phase.low;
+        const costHigh = totalHigh * phase.high;
+
+        html += `
+          <div class="cost-line">
+            <span>• ${phase.name}</span>
+            <span>$${costLow.toLocaleString(undefined, {maximumFractionDigits: 0})} – $${costHigh.toLocaleString(undefined, {maximumFractionDigits: 0})}</span>
+          </div>
+        `;
+      });
+
+      html += `
+        <div class="cost-line">
+          <span>• Procurement Assistance</span>
+          <span>TBD (Hourly, as needed)</span>
+        </div>
+        <div class="cost-line">
+          <span>• Permitting Assistance</span>
+          <span>TBD (Hourly, as needed)</span>
+        </div>
+        <div class="cost-line">
+          <span>• Construction Phase Services</span>
+          <span>TBD (Hourly, as needed)</span>
+        </div>
+      `;
+
+      output.innerHTML = html;
+    }
+
+    document.getElementById("sqft").addEventListener("keydown", function(event) {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        calculate();
+      }
+    });
+  </script>
+
+</body>
+</html>
